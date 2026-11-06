@@ -12,7 +12,7 @@ function json(data, status = 200) {
 function slugify(value) {
   return String(value || "")
     .normalize("NFKD")
-    .replace(/[\\u0300-\\u036f]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
@@ -20,7 +20,7 @@ function slugify(value) {
 }
 
 function decodeLogo(dataUrl) {
-  const match = /^data:(image\\/(?:png|jpeg));base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ""));
+  const match = /^data:(image\/(?:png|jpeg));base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl || ""));
   if (!match) throw new Error("Please upload a PNG or JPG logo.");
   const binary = atob(match[2]);
   if (!binary.length || binary.length > MAX_LOGO_BYTES) {
@@ -61,7 +61,7 @@ export async function onRequestPost({ request, env }) {
   if (!slug || slug.length > 60 || /^(register|portal|api|privacy-policy|disclaimer|assets)$/.test(slug)) {
     return json({ error: "Please choose a different brand name for your portal link." }, 400);
   }
-  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) || email.length > 160) return json({ error: "Enter a valid email address." }, 400);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 160) return json({ error: "Enter a valid email address." }, 400);
   if (!/^[0-9]{10}$/.test(mobileNumber)) return json({ error: "Enter a valid 10-digit mobile number." }, 400);
   if (!/^[0-9]{10}$/.test(whatsappNumber)) return json({ error: "Enter a valid 10-digit WhatsApp number." }, 400);
   if (!partnerCode || partnerCode.length > 50) return json({ error: "Enter a valid Partner Code." }, 400);
@@ -100,7 +100,7 @@ export async function onRequestPost({ request, env }) {
     }, 201);
   } catch (error) {
     const message = String(error && error.message || "");
-    if (/UNIQUE constraint failed: dsa_partners\\.partner_slug/i.test(message)) {
+    if (/UNIQUE constraint failed: dsa_partners\.partner_slug/i.test(message)) {
       return json({ error: "This brand name is already registered. Please use a unique brand name." }, 409);
     }
     return json({ error: "Could not save registration. Please check the details and try again." }, 500);
