@@ -65,6 +65,7 @@ export async function onRequestPost({ request, env }) {
   if (!/^[0-9]{10}$/.test(mobileNumber)) return json({ error: "Enter a valid 10-digit mobile number." }, 400);
   if (!/^[0-9]{10}$/.test(whatsappNumber)) return json({ error: "Enter a valid 10-digit WhatsApp number." }, 400);
   if (!partnerCode || partnerCode.length > 50) return json({ error: "Enter a valid Partner Code." }, 400);
+  if (body.publicProfileConsent !== true) return json({ error: "Consent is required to publish your brand, logo and contact numbers on the DSA portal." }, 400);
 
   let logo;
   try {
@@ -75,7 +76,7 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const result = await env.DB.prepare(
-      "INSERT INTO dsa_partners (partner_slug, brand_name, email, mobile_number, whatsapp_number, partner_code, logo_key, status, logo_data, logo_content_type) VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?)"
+      "INSERT INTO dsa_partners (partner_slug, brand_name, email, mobile_number, whatsapp_number, partner_code, logo_key, status, logo_data, logo_content_type, public_profile_consent) VALUES (?, ?, ?, ?, ?, ?, ?, 'ACTIVE', ?, ?, ?)"
     ).bind(
       slug,
       brandName,
@@ -85,7 +86,8 @@ export async function onRequestPost({ request, env }) {
       partnerCode,
       "dsa-logos/" + slug,
       logo.bytes,
-      logo.contentType
+      logo.contentType,
+      1
     ).run();
 
     const partnerId = Number(result.meta && result.meta.last_row_id || 0);
@@ -96,7 +98,7 @@ export async function onRequestPost({ request, env }) {
       partnerCode,
       brandName,
       slug,
-      portalPath: "/portal.html?brand=" + encodeURIComponent(slug)
+      portalPath: "/p/" + encodeURIComponent(slug)
     }, 201);
   } catch (error) {
     const message = String(error && error.message || "");
