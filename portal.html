@@ -257,7 +257,7 @@
     const moneycontrolApply = document.getElementById("moneycontrol-apply");
 
     function applyDsaBrandTracking(brandName) {
-      const normalizedBrand = String(brandName || "").replace(/\\s+/g, "").toLowerCase();
+      const normalizedBrand = String(brandName || "").replace(/\s+/g, "").toLowerCase();
       if (!normalizedBrand) return;
       document.querySelectorAll("[data-dsa-tracking-param]").forEach((link) => {
         const trackingParam = link.dataset.dsaTrackingParam;
@@ -269,7 +269,7 @@
       });
       if (moneycontrolApply) {
         const moneycontrolUrl = new URL(moneycontrolApply.href);
-        moneycontrolUrl.searchParams.set("utm_campaign", "Login_" + String(brandName).replace(/\\s/g, ""));
+        moneycontrolUrl.searchParams.set("utm_campaign", "Login_" + String(brandName).replace(/\s/g, ""));
         moneycontrolApply.href = moneycontrolUrl.toString();
       }
     }
@@ -285,7 +285,7 @@
 
       const whatsapp = String(data.whatsappNumber || "").trim();
       if (whatsapp) {
-        const digits = whatsapp.replace(/\\D/g, "");
+        const digits = whatsapp.replace(/\D/g, "");
         const internationalNumber = digits.length === 10 ? "91" + digits : digits;
         const whatsappUrl = "https://wa.me/" + internationalNumber;
         headerWhatsApp.href = whatsappUrl;
@@ -320,13 +320,13 @@
         footerBrand.textContent = data.brandName.trim();
         footerMobile.textContent = data.mobileNumber || "Mobile number not provided";
         const logo = data.logoDataUrl || data.logo;
-        if (typeof logo === "string" && /^data:image\\/(png|jpeg);base64,/i.test(logo)) {
+        if (typeof logo === "string" && /^data:image\/(png|jpeg);base64,/i.test(logo)) {
           logoNode.src = logo;
           logoFrame.classList.add("has-logo");
         }
         const whatsapp = String(data.whatsappNumber || "").trim();
         if (whatsapp) {
-          const digits = whatsapp.replace(/\\D/g, "");
+          const digits = whatsapp.replace(/\D/g, "");
           const number = digits.length === 10 ? "91" + digits : digits;
           headerWhatsApp.href = "https://wa.me/" + number;
           headerWhatsAppLabel.textContent = "Support - " + whatsapp;
