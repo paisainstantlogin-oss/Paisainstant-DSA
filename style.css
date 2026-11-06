@@ -260,6 +260,7 @@
 @media(prefers-reduced-motion:reduce){.hero .payout-stack>.hero-card{animation:none;transition:none;translate:none;scale:1}.hero .payout-stack>.hero-card::after{animation:none;display:none}.hero .payout-stack>.hero-card:hover{transform:none}}
 
 /* Mobile responsive refinements; desktop rules remain unchanged */
+@media(max-width:900px){.hero{overflow-x:clip}}
 @media(max-width:720px){
   html,body{overflow-x:clip}
   .header{height:68px;gap:8px;padding:8px 16px;overflow:visible}

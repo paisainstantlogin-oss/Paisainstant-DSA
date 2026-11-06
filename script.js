@@ -2,7 +2,7 @@ function checkPin() {
   const pin = document.getElementById("pinInput").value.trim();
   const box = document.getElementById("pinResults");
   const names = {
-    muthoot: "Muthoot",
+    muthoot: "Muthoot EMI",
     incred: "InCred",
     fibe: "Fibe",
     poonawalla: "Poonawalla Fincorp",

@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff8fc">
+  <title>Create Your DSA Portal | Paisainstant Demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --pink: #ff2f92;
+      --yellow: #ffd51a;
+      --ink: #211923;
+      --muted: #716975;
+      --line: #eee3eb;
+      --surface: #fff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 18px;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background: linear-gradient(135deg, #fff8fc 0%, #fff 54%, #fff9d6 100%);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page { width: min(100%, 560px); }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: fit-content;
+      margin: 0 auto 22px;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      border-radius: 15px;
+      background: linear-gradient(145deg, var(--yellow), var(--pink));
+      box-shadow: 0 8px 20px #d69abb44;
+      font-size: 25px;
+      font-weight: 900;
+    }
+
+    .brand-name { font-size: 23px; font-weight: 850; letter-spacing: -.8px; }
+    .brand-name span { color: var(--pink); }
+    .brand-caption { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: 2px; }
+
+    .card {
+      padding: clamp(23px, 6vw, 38px);
+      border: 1px solid #f0e5ec;
+      border-radius: 26px;
+      background: #ffffffed;
+      box-shadow: 0 22px 60px #53334c12, 0 5px 18px #ff2f920d;
+    }
+
+    .eyebrow { color: #ce1872; font-size: 11px; font-weight: 900; letter-spacing: 1.8px; text-transform: uppercase; }
+    h1 { margin: 9px 0 8px; font-size: clamp(28px, 7vw, 38px); line-height: 1.1; letter-spacing: -1.4px; }
+    .intro { margin: 0 0 25px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    .field { margin-top: 18px; }
+    label, .field-label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 800; }
+    .optional { color: var(--muted); font-size: 12px; font-weight: 500; }
+    input[type="text"], input[type="tel"], input[type="email"] {
+      display: block;
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px;
+      border: 1px solid #e7dce5;
+      border-radius: 13px;
+      outline: none;
+      background: var(--surface);
+      color: var(--ink);
+      font: inherit;
+      font-size: 15px;
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    input:focus-visible { border-color: var(--pink); box-shadow: 0 0 0 4px #ff2f9218; }
+    input::placeholder { color: #a49ba5; }
+    .hint { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .upload-box {
+      padding: 16px;
+      border: 1px dashed #e5b5d0;
+      border-radius: 15px;
+      background: #fff9fc;
+    }
+    input[type="file"] { display: block; width: 100%; color: var(--muted); font: inherit; font-size: 13px; }
+    input[type="file"]::file-selector-button {
+      margin-right: 12px;
+      padding: 9px 12px;
+      border: 0;
+      border-radius: 10px;
+      background: #ffebf5;
+      color: #a81761;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .preview {
+      display: none;
+      width: 112px;
+      height: 112px;
+      margin-top: 15px;
+      padding: 8px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: #fff;
+    }
+    .preview.is-visible { display: grid; place-items: center; }
+    .preview img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+    .field-error,.file-error { min-height: 18px; margin: 7px 0 0; color: #b4235b; font-size: 12px; line-height: 1.4; }
+    .field-error:empty,.file-error:empty { min-height: 0; margin-top: 0; }
+    .partner-code-confirm { display:flex; align-items:flex-start; gap:9px; margin-top:12px; color:var(--ink); font-size:12px; font-weight:650; line-height:1.45; }
+    .partner-code-confirm input { flex:0 0 auto; width:16px; height:16px; margin:1px 0 0; accent-color:var(--pink); }
+
+    .demo-notice {
+      margin: 23px 0 0;
+      padding: 12px 14px;
+      border: 1px solid #f2dfa0;
+      border-radius: 12px;
+      background: #fff9df;
+      color: #574915;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .submit {
+      width: 100%;
+      min-height: 52px;
+      margin-top: 17px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(110deg, var(--pink), #f14f9d 55%, #ffb900);
+      box-shadow: 0 8px 18px #ff2f9233;
+      color: #fff;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .submit:hover { transform: translateY(-2px); box-shadow: 0 11px 23px #ff2f9240; }
+    .submit:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+    .submit:active { transform: translateY(1px); }
+    .status { min-height: 20px; margin: 11px 0 0; color: #8d1954; font-size: 13px; text-align: center; }
+
+    .portal-preview {
+      margin-top: 22px;
+      padding: 20px;
+      border: 1px solid #f2c4da;
+      border-radius: 18px;
+      background: linear-gradient(145deg, #fff8fc, #fffdf2);
+      box-shadow: 0 10px 24px #ff2f9212;
+    }
+    .portal-preview[hidden] { display: none; }
+    .preview-heading { display: flex; align-items: center; gap: 8px; margin: 0 0 5px; color: #8d1954; font-size: 17px; }
+    .preview-heading::before { content: "✓"; display: grid; width: 25px; height: 25px; place-items: center; border-radius: 50%; background: #e3f6e9; color: #237a41; font-size: 14px; }
+    .preview-partner-code { margin:0 0 14px 33px; color:#a81761; font-size:12px; font-weight:900; letter-spacing:.6px; }
+    .portal-brand { display: flex; align-items: flex-start; gap: 15px; min-width: 0; }
+    .portal-logo { display: grid; flex: 0 0 68px; width: 68px; height: 68px; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 0 0 3px #ffd51a33; }
+    .portal-logo img { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+    .portal-brand-copy { flex: 1; min-width: 0; }
+    .portal-brand-name { margin: 0; color: var(--ink); overflow-wrap: anywhere; font-size: 19px; line-height: 1.3; }
+    .portal-detail { margin: 7px 0 0; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    #portal-whatsapp { color: #a81761; font-size: 14px; font-weight: 800; line-height: 1.45; }
+    .portal-support-detail { margin-top: 9px; padding: 9px 11px; border-left: 3px solid var(--yellow); border-radius: 0 10px 10px 0; background: #fff8fc; color: #8d1954; font-size: 15px; font-weight: 900; line-height: 1.45; }
+    .url-label { display: block; margin: 18px 0 7px; font-size: 12px; font-weight: 800; }
+    .url-preview { display: block; padding: 11px 12px; border: 1px solid #f1d7e4; border-radius: 11px; background: #fff; color: #9d145f; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+    .copy-link {
+      width: 100%;
+      min-height: 44px;
+      margin-top: 11px;
+      border: 1px solid #f0bad4;
+      border-radius: 12px;
+      background: #fff;
+      color: #a81761;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 850;
+      cursor: pointer;
+    }
+    .copy-link:hover { background: #fff0f7; }
+    .copy-link:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
+    .preview-disclaimer { margin: 13px 0 0; color: #604b18; font-size: 12px; line-height: 1.5; }
+
+    @media (max-width: 420px) {
+      body { padding: 20px 13px; }
+      .card { border-radius: 21px; }
+      .portal-preview { padding: 16px; }
+      .portal-brand { gap: 12px; }
+      .portal-logo { flex-basis: 58px; width: 58px; height: 58px; }
+      .portal-brand-name { font-size: 17px; }
+      .portal-support-detail { font-size: 14px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+    .legal-footer { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin: 22px auto 0; padding: 14px 8px 4px; border-top: 1px solid var(--line); }
+    .legal-footer a { color: var(--pink); font-size: 13px; font-weight: 800; text-underline-offset: 3px; }
+    .legal-footer a:focus-visible { outline: 3px solid var(--yellow); outline-offset: 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="brand" aria-label="Paisainstant">
+      <span class="brand-mark" aria-hidden="true">₹</span>
+      <span><span class="brand-name">Paisa<span>instant</span></span><small class="brand-caption">DSA PARTNER PORTAL</small></span>
+    </div>
+
+    <section class="card" aria-labelledby="page-title">
+      <span class="eyebrow">Your brand, your portal</span>
+      <h1 id="page-title">Set up your DSA demo</h1>
+      <p class="intro">Add your business details and choose a logo to preview how your branded portal setup could begin.</p>
+
+      <form id="registration-form" novalidate>
+        <div class="field">
+          <label for="brand-name">Business / Brand Name</label>
+          <input id="brand-name" name="brandName" type="text" autocomplete="organization" placeholder="e.g. Sharma Financial Services" aria-describedby="brand-name-error" required>
+          <p class="field-error" id="brand-name-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="partner-code">Partner Code</label>
+          <input id="partner-code" name="partnerCode" type="text" value="1011" aria-describedby="partner-code-hint partner-code-error" required>
+          <p class="hint" id="partner-code-hint">Enter the Partner Code assigned to this DSA.</p>
+          <p class="field-error" id="partner-code-error" aria-live="polite"></p>
+          <label class="partner-code-confirm" for="partner-code-confirm"><input id="partner-code-confirm" name="partnerCodeConfirmed" type="checkbox" aria-describedby="partner-code-confirm-error" required> <span>I confirm this is the Partner Code assigned to me.</span></label>
+          <p class="field-error" id="partner-code-confirm-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="mobile-number">Mobile Number</label>
+          <input id="mobile-number" name="mobileNumber" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" aria-describedby="mobile-hint mobile-error" required>
+          <p class="hint" id="mobile-hint">Enter a 10-digit mobile number.</p>
+          <p class="field-error" id="mobile-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="email">Email ID</label>
+          <input id="email" name="email" type="email" autocomplete="email" placeholder="Enter your email address" aria-describedby="email-error" required>
+          <p class="field-error" id="email-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="whatsapp-number">WhatsApp Number</label>
+          <input id="whatsapp-number" name="whatsappNumber" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="10-digit WhatsApp number" pattern="[0-9]{10}" maxlength="10" aria-describedby="whatsapp-hint whatsapp-error" required>
+          <p class="hint" id="whatsapp-hint">Enter a 10-digit WhatsApp number.</p>
+          <p class="field-error" id="whatsapp-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Logo Upload</span>
+          <div class="upload-box">
+            <label for="logo-file">Choose a logo image</label>
+            <input id="logo-file" name="logo" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" aria-describedby="logo-hint logo-error" required>
+            <p class="hint" id="logo-hint">PNG, JPG, or JPEG. The selected logo is saved only in this browser for this local demo; it is not uploaded.</p>
+            <div class="preview" id="logo-preview"><img id="preview-image" alt="Selected logo preview"></div>
+            <p class="file-error" id="logo-error" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <p class="demo-notice">This is a local demo. It does not create or publish a real website.</p>
+        <button class="submit" type="submit">Create My Portal</button>
+        <p class="status" id="form-status" role="status" aria-live="polite"></p>
+      </form>
+
+      <section class="portal-preview" id="portal-preview" aria-labelledby="preview-heading" aria-live="polite" hidden>
+        <h2 class="preview-heading" id="preview-heading">Your portal preview is ready</h2>
+        <p class="preview-partner-code" id="preview-partner-code"></p>
+        <div class="portal-brand">
+          <span class="portal-logo"><img id="portal-logo-image" alt="Selected business logo"></span>
+          <div class="portal-brand-copy">
+            <h3 class="portal-brand-name" id="portal-brand-name"></h3>
+            <p class="portal-detail" id="portal-whatsapp"></p>
+            <p class="portal-detail portal-support-detail">Support &amp; Payout: 7239975225</p>
+          </div>
+        </div>
+        <span class="url-label">Demo URL preview</span>
+        <output class="url-preview" id="portal-url"></output>
+        <button class="copy-link" id="copy-link" type="button">Copy Demo Link</button>
+        <button class="copy-link" id="open-portal" type="button">Open Portal Preview</button>
+        <p class="preview-disclaimer">This link is only a preview. It does not create or publish a real website yet.</p>
+      </section>
+    </section>
+    <footer class="legal-footer" aria-label="Legal policies">
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="disclaimer.html">Disclaimer</a>
+    </footer>
+  </main>
+
+  <script>
+    const logoInput = document.getElementById("logo-file");
+    const brandInput = document.getElementById("brand-name");
+    const partnerCodeInput = document.getElementById("partner-code");
+    const partnerCodeConfirmation = document.getElementById("partner-code-confirm");
+    const mobileInput = document.getElementById("mobile-number");
+    const emailInput = document.getElementById("email");
+    const whatsappInput = document.getElementById("whatsapp-number");
+    const preview = document.getElementById("logo-preview");
+    const previewImage = document.getElementById("preview-image");
+    const portalPartnerCode = document.getElementById("preview-partner-code");
+    const formStatus = document.getElementById("form-status");
+    const portalPreview = document.getElementById("portal-preview");
+    const portalLogoImage = document.getElementById("portal-logo-image");
+    const portalUrl = document.getElementById("portal-url");
+    const demoStorageKey = "paisainstantDemoData";
+    let previewUrl = null;
+
+    function makeBrandSlug(value) {
+      return value
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "my-brand";
+    }
+
+    function hidePortalPreview() {
+      portalPreview.hidden = true;
+      formStatus.textContent = "";
+    }
+
+    function setFieldError(input, errorNode, message) {
+      errorNode.textContent = message;
+      input.setAttribute("aria-invalid", message ? "true" : "false");
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.addEventListener("load", () => resolve(reader.result), { once: true });
+        reader.addEventListener("error", () => reject(new Error("Could not read the selected logo.")), { once: true });
+        reader.readAsDataURL(file);
+      });
+    }
+
+    logoInput.addEventListener("change", () => {
+      const file = logoInput.files && logoInput.files[0];
+      const logoError = document.getElementById("logo-error");
+      setFieldError(logoInput, logoError, "");
+      hidePortalPreview();
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+      preview.classList.remove("is-visible");
+      previewImage.removeAttribute("src");
+
+      if (!file) return;
+      const allowedType = ["image/png", "image/jpeg"].includes(file.type);
+      const allowedExtension = /\.(png|jpe?g)$/i.test(file.name);
+      if (!allowedType || !allowedExtension) {
+        setFieldError(logoInput, logoError, "Choose a valid PNG, JPG, or JPEG logo image.");
+        logoInput.value = "";
+        return;
+      }
+
+      previewUrl = URL.createObjectURL(file);
+      previewImage.src = previewUrl;
+      preview.classList.add("is-visible");
+    });
+
+    brandInput.addEventListener("input", () => {
+      setFieldError(brandInput, document.getElementById("brand-name-error"), brandInput.value.trim() ? "" : "Enter your business or brand name.");
+    });
+    partnerCodeInput.addEventListener("input", () => {
+      partnerCodeConfirmation.checked = false;
+      setFieldError(partnerCodeInput, document.getElementById("partner-code-error"), partnerCodeInput.value.trim() ? "" : "Enter your assigned Partner Code.");
+      setFieldError(partnerCodeConfirmation, document.getElementById("partner-code-confirm-error"), "");
+    });
+    partnerCodeConfirmation.addEventListener("change", () => {
+      setFieldError(partnerCodeConfirmation, document.getElementById("partner-code-confirm-error"), partnerCodeConfirmation.checked ? "" : "Confirm that this Partner Code was assigned to you.");
+    });
+    mobileInput.addEventListener("input", () => {
+      setFieldError(mobileInput, document.getElementById("mobile-error"), /^[0-9]{10}$/.test(mobileInput.value.trim()) ? "" : "Enter a valid 10-digit mobile number.");
+    });
+    emailInput.addEventListener("input", () => {
+      const email = emailInput.value.trim();
+      if (email !== emailInput.value) emailInput.value = email;
+      const message = !email ? "Enter your email address." : (emailInput.validity.valid ? "" : "Enter a valid email address.");
+      setFieldError(emailInput, document.getElementById("email-error"), message);
+    });
+    whatsappInput.addEventListener("input", () => {
+      setFieldError(whatsappInput, document.getElementById("whatsapp-error"), /^[0-9]{10}$/.test(whatsappInput.value.trim()) ? "" : "Enter a valid 10-digit WhatsApp number.");
+    });
+
+    document.getElementById("registration-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      hidePortalPreview();
+      const formStatus = document.getElementById("form-status");
+      formStatus.textContent = "";
+      let isValid = true;
+      let firstInvalid = null;
+      const validate = (input, errorId, isFieldValid, message) => {
+        const errorNode = document.getElementById(errorId);
+        setFieldError(input, errorNode, isFieldValid ? "" : message);
+        if (!isFieldValid) {
+          isValid = false;
+          if (!firstInvalid) firstInvalid = input;
+        }
+      };
+
+      const brandName = brandInput.value.trim();
+      const partnerCode = partnerCodeInput.value.trim();
+      const mobileNumber = mobileInput.value.trim();
+      const email = emailInput.value.trim();
+      emailInput.value = email;
+      const whatsappNumber = whatsappInput.value.trim();
+      const selectedLogo = logoInput.files && logoInput.files[0];
+
+      validate(brandInput, "brand-name-error", Boolean(brandName), "Enter your business or brand name.");
+      validate(partnerCodeInput, "partner-code-error", Boolean(partnerCode), "Enter your assigned Partner Code.");
+      validate(partnerCodeConfirmation, "partner-code-confirm-error", partnerCodeConfirmation.checked, "Confirm that this Partner Code was assigned to you.");
+      validate(mobileInput, "mobile-error", /^[0-9]{10}$/.test(mobileNumber), "Enter a valid 10-digit mobile number.");
+      validate(emailInput, "email-error", Boolean(email) && emailInput.validity.valid, email ? "Enter a valid email address." : "Enter your email address.");
+      validate(whatsappInput, "whatsapp-error", /^[0-9]{10}$/.test(whatsappNumber), "Enter a valid 10-digit WhatsApp number.");
+
+      const validLogo = Boolean(selectedLogo)
+        && ["image/png", "image/jpeg"].includes(selectedLogo.type)
+        && /\.(png|jpe?g)$/i.test(selectedLogo.name)
+        && Boolean(previewUrl);
+      validate(logoInput, "logo-error", validLogo, "Choose a valid PNG, JPG, or JPEG logo image.");
+
+      if (!isValid) {
+        formStatus.textContent = "Please correct the highlighted fields before creating your portal preview.";
+        firstInvalid?.focus();
+        return;
+      }
+
+      const generatedUrl = `https://paisainstant.in/${makeBrandSlug(brandName)}/`;
+
+      try {
+        const logoDataUrl = await readFileAsDataUrl(selectedLogo);
+        const demoData = { brandName, partnerCode, mobileNumber, email, whatsappNumber, logoDataUrl };
+        localStorage.setItem(demoStorageKey, JSON.stringify(demoData));
+
+        document.getElementById("portal-brand-name").textContent = brandName;
+        portalPartnerCode.textContent = `PARTNER CODE ${partnerCode}`;
+        document.getElementById("portal-whatsapp").textContent = `WhatsApp: ${whatsappNumber}`;
+        portalLogoImage.src = logoDataUrl;
+        portalUrl.textContent = generatedUrl;
+        portalPreview.hidden = false;
+        formStatus.textContent = "Saved in this browser for the local demo only.";
+      } catch {
+        formStatus.textContent = "Could not save demo data in browser storage. Open this page through the local demo server and try again.";
+        portalPreview.hidden = true;
+      }
+    });
+
+    document.getElementById("registration-form").addEventListener("input", hidePortalPreview);
+
+    document.getElementById("copy-link").addEventListener("click", async () => {
+      const link = portalUrl.textContent;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(link);
+        } else {
+          const temporaryInput = document.createElement("textarea");
+          temporaryInput.value = link;
+          temporaryInput.setAttribute("readonly", "");
+          temporaryInput.style.position = "fixed";
+          temporaryInput.style.opacity = "0";
+          document.body.append(temporaryInput);
+          temporaryInput.select();
+          const copied = document.execCommand("copy");
+          temporaryInput.remove();
+          if (!copied) throw new Error("Clipboard unavailable");
+        }
+        document.getElementById("copy-link").textContent = "Demo Link Copied";
+      } catch {
+        document.getElementById("copy-link").textContent = "Copy failed — select the preview URL";
+      }
+    });
+
+    document.getElementById("open-portal").addEventListener("click", () => {
+      window.open(new URL("portal.html", window.location.href).href, "_blank", "noopener,noreferrer");
+    });
+  </script>
+</body>
+</html>
