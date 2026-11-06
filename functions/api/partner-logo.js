@@ -4,7 +4,7 @@ export async function onRequestGet({ request, env }) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return new Response("Not found", { status: 404 });
 
   const row = await env.DB.prepare(
-    "SELECT logo_data, logo_content_type FROM dsa_partners WHERE partner_slug = ? AND status = 'ACTIVE' LIMIT 1"
+    "SELECT logo_data, logo_content_type FROM dsa_partners WHERE partner_slug = ? AND status = 'ACTIVE' AND public_profile_consent = 1 LIMIT 1"
   ).bind(slug).first();
 
   if (!row || !row.logo_data) return new Response("Logo not found", { status: 404 });
