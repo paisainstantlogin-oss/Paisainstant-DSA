@@ -98,7 +98,7 @@ export async function onRequestPost({ request, env }) {
       partnerCode,
       brandName,
       slug,
-      portalPath: "/portal.html?brand=" + encodeURIComponent(slug)
+      portalPath: "/p/" + encodeURIComponent(slug)
     }, 201);
   } catch (error) {
     const message = String(error && error.message || "");
