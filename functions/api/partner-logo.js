@@ -9,7 +9,10 @@ export async function onRequestGet({ request, env }) {
 
   if (!row || !row.logo_data) return new Response("Logo not found", { status: 404 });
   const contentType = row.logo_content_type === "image/png" ? "image/png" : "image/jpeg";
-  return new Response(row.logo_data, {
+  const binary = atob(String(row.logo_data));
+  const imageBytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) imageBytes[i] = binary.charCodeAt(i);
+  return new Response(imageBytes, {
     headers: {
       "content-type": contentType,
       "cache-control": "public, max-age=3600",
