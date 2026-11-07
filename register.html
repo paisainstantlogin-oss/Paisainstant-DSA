@@ -266,13 +266,22 @@
           <div class="upload-box">
             <label for="logo-file">Choose a logo image</label>
             <input id="logo-file" name="logo" type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" aria-describedby="logo-hint logo-error" required>
-            <p class="hint" id="logo-hint">PNG, JPG, or JPEG. The selected logo is saved only in this browser for this local demo; it is not uploaded.</p>
+            <p class="hint" id="logo-hint">PNG, JPG, or JPEG, maximum 200 KB. Your logo will be securely saved for your active shareable portal.</p>
             <div class="preview" id="logo-preview"><img id="preview-image" alt="Selected logo preview"></div>
             <p class="file-error" id="logo-error" role="status" aria-live="polite"></p>
           </div>
         </div>
 
-        <p class="demo-notice">This is a local demo. It does not create or publish a real website.</p>
+
+        <div class="field">
+          <label class="partner-code-confirm" for="public-profile-consent">
+            <input id="public-profile-consent" name="publicProfileConsent" type="checkbox" required>
+            <span>I agree that my brand name, uploaded logo, mobile number and WhatsApp number may be displayed on my public DSA portal. My email address will remain private.</span>
+          </label>
+          <p class="field-error" id="public-profile-consent-error" aria-live="polite"></p>
+        </div>
+
+        <p class="demo-notice">Your portal link becomes active immediately after successful registration.</p>
         <button class="submit" type="submit">Create My Portal</button>
         <p class="status" id="form-status" role="status" aria-live="polite"></p>
       </form>
@@ -288,11 +297,11 @@
             <p class="portal-detail portal-support-detail">Support &amp; Payout: 7239975225</p>
           </div>
         </div>
-        <span class="url-label">Demo URL preview</span>
+        <span class="url-label">Your Active White-Label Portal Link</span>
         <output class="url-preview" id="portal-url"></output>
-        <button class="copy-link" id="copy-link" type="button">Copy Demo Link</button>
-        <button class="copy-link" id="open-portal" type="button">Open Portal Preview</button>
-        <p class="preview-disclaimer">This link is only a preview. It does not create or publish a real website yet.</p>
+        <button class="copy-link" id="copy-link" type="button">Copy Portal Link</button>
+        <button class="copy-link" id="open-portal" type="button">Open My Portal</button>
+        <p class="preview-disclaimer">Your active portal can be shared and opened on any mobile or computer.</p>
       </section>
     </section>
     <footer class="legal-footer" aria-label="Legal policies">
@@ -316,8 +325,8 @@
     const portalPreview = document.getElementById("portal-preview");
     const portalLogoImage = document.getElementById("portal-logo-image");
     const portalUrl = document.getElementById("portal-url");
-    const demoStorageKey = "paisainstantDemoData";
     let previewUrl = null;
+    let activePortalUrl = "";
 
     function makeBrandSlug(value) {
       return value
@@ -361,8 +370,8 @@
       if (!file) return;
       const allowedType = ["image/png", "image/jpeg"].includes(file.type);
       const allowedExtension = /\.(png|jpe?g)$/i.test(file.name);
-      if (!allowedType || !allowedExtension) {
-        setFieldError(logoInput, logoError, "Choose a valid PNG, JPG, or JPEG logo image.");
+      if (!allowedType || !allowedExtension || file.size > 200 * 1024) {
+        setFieldError(logoInput, logoError, file.size > 200 * 1024 ? "Logo must be 200 KB or smaller." : "Choose a valid PNG, JPG, or JPEG logo image.");
         logoInput.value = "";
         return;
       }
@@ -426,10 +435,13 @@
       validate(mobileInput, "mobile-error", /^[0-9]{10}$/.test(mobileNumber), "Enter a valid 10-digit mobile number.");
       validate(emailInput, "email-error", Boolean(email) && emailInput.validity.valid, email ? "Enter a valid email address." : "Enter your email address.");
       validate(whatsappInput, "whatsapp-error", /^[0-9]{10}$/.test(whatsappNumber), "Enter a valid 10-digit WhatsApp number.");
+      const publicProfileConsent = document.getElementById("public-profile-consent");
+      validate(publicProfileConsent, "public-profile-consent-error", publicProfileConsent.checked, "Please agree to the public display of your brand, logo and contact numbers.");
 
       const validLogo = Boolean(selectedLogo)
         && ["image/png", "image/jpeg"].includes(selectedLogo.type)
         && /\.(png|jpe?g)$/i.test(selectedLogo.name)
+        && selectedLogo.size <= 200 * 1024
         && Boolean(previewUrl);
       validate(logoInput, "logo-error", validLogo, "Choose a valid PNG, JPG, or JPEG logo image.");
 
@@ -439,30 +451,53 @@
         return;
       }
 
-      const generatedUrl = `https://paisainstant.in/${makeBrandSlug(brandName)}/`;
+      const submitButton = document.querySelector("#registration-form button[type='submit']");
+      submitButton.disabled = true;
+      submitButton.textContent = "Creating active portal...";
+      formStatus.textContent = "Saving your registration securely. Please do not close this page.";
 
       try {
         const logoDataUrl = await readFileAsDataUrl(selectedLogo);
-        const demoData = { brandName, partnerCode, mobileNumber, email, whatsappNumber, logoDataUrl };
-        localStorage.setItem(demoStorageKey, JSON.stringify(demoData));
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            brandName: brandName,
+            partnerCode: partnerCode,
+            mobileNumber: mobileNumber,
+            email: email,
+            whatsappNumber: whatsappNumber,
+            logoDataUrl: logoDataUrl,
+            publicProfileConsent: publicProfileConsent.checked
+          })
+        });
 
-        document.getElementById("portal-brand-name").textContent = brandName;
-        portalPartnerCode.textContent = `PARTNER CODE ${partnerCode}`;
-        document.getElementById("portal-whatsapp").textContent = `WhatsApp: ${whatsappNumber}`;
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(result.error || "Registration could not be completed. Please try again.");
+        }
+
+        activePortalUrl = new URL(result.portalPath, window.location.origin).href;
+        document.getElementById("portal-brand-name").textContent = result.brandName || brandName;
+        portalPartnerCode.textContent = result.partnerCode ? "PARTNER CODE " + result.partnerCode : "PARTNER ID " + result.partnerId;
+        document.getElementById("portal-whatsapp").textContent = "WhatsApp: " + whatsappNumber;
         portalLogoImage.src = logoDataUrl;
-        portalUrl.textContent = generatedUrl;
+        portalUrl.textContent = activePortalUrl;
         portalPreview.hidden = false;
-        formStatus.textContent = "Saved in this browser for the local demo only.";
-      } catch {
-        formStatus.textContent = "Could not save demo data in browser storage. Open this page through the local demo server and try again.";
+        formStatus.textContent = "Registration successful. Your White-Label Portal is ACTIVE and ready to share.";
+      } catch (error) {
+        formStatus.textContent = error instanceof Error ? error.message : "Registration failed. Please try again.";
         portalPreview.hidden = true;
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Create My Portal";
       }
     });
 
     document.getElementById("registration-form").addEventListener("input", hidePortalPreview);
 
     document.getElementById("copy-link").addEventListener("click", async () => {
-      const link = portalUrl.textContent;
+      const link = activePortalUrl || portalUrl.textContent;
       try {
         if (navigator.clipboard && window.isSecureContext) {
           await navigator.clipboard.writeText(link);
@@ -478,14 +513,14 @@
           temporaryInput.remove();
           if (!copied) throw new Error("Clipboard unavailable");
         }
-        document.getElementById("copy-link").textContent = "Demo Link Copied";
+        document.getElementById("copy-link").textContent = "Portal Link Copied";
       } catch {
         document.getElementById("copy-link").textContent = "Copy failed — select the preview URL";
       }
     });
 
     document.getElementById("open-portal").addEventListener("click", () => {
-      window.open(new URL("portal.html", window.location.href).href, "_blank", "noopener,noreferrer");
+      if (activePortalUrl) window.open(activePortalUrl, "_blank", "noopener,noreferrer");
     });
   </script>
 </body>

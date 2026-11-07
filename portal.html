@@ -243,79 +243,114 @@
 <script src="script.js"></script>
 <script>
   (() => {
-    const storageKey = "paisainstantDemoData";
     const nameNode = document.getElementById("dsa-brand-name");
     const partnerCodeNode = document.getElementById("dsa-partner-code");
     const logoNode = document.getElementById("dsa-logo");
     const logoFrame = document.getElementById("dsa-brand-mark");
     const notice = document.getElementById("demo-data-notice");
+    const localNotice = document.querySelector(".demo-local-warning");
     const headerWhatsApp = document.getElementById("dsa-whatsapp-header");
     const headerWhatsAppLabel = document.getElementById("dsa-whatsapp-label");
     const supportWhatsApp = document.getElementById("dsa-whatsapp-support");
     const footerBrand = document.getElementById("footer-brand-name");
     const footerMobile = document.getElementById("footer-mobile-number");
     const moneycontrolApply = document.getElementById("moneycontrol-apply");
-      const dsaTrackingBase = "paisaInstant_dsa";
 
-      function applyDsaBrandTracking(normalizedBrandName) {
-        document.querySelectorAll("[data-dsa-tracking-param]").forEach((link) => {
-          const trackingParam = link.dataset.dsaTrackingParam;
-          const lenderUrl = new URL(link.href);
-          const currentValue = lenderUrl.searchParams.get(trackingParam);
-          if (currentValue === null) return;
-
-          const brandedValue = `${dsaTrackingBase}_${normalizedBrandName}`;
-          if (currentValue === brandedValue) return;
-
-          lenderUrl.searchParams.set(trackingParam, brandedValue);
+    function applyDsaBrandTracking(brandName) {
+      const normalizedBrand = String(brandName || "").replace(/\s+/g, "").toLowerCase();
+      if (!normalizedBrand) return;
+      document.querySelectorAll("[data-dsa-tracking-param]").forEach((link) => {
+        const trackingParam = link.dataset.dsaTrackingParam;
+        const lenderUrl = new URL(link.href);
+        if (lenderUrl.searchParams.has(trackingParam)) {
+          lenderUrl.searchParams.set(trackingParam, "paisaInstant_dsa_" + normalizedBrand);
           link.href = lenderUrl.toString();
-        });
-      }
-
-    try {
-      const rawData = localStorage.getItem(storageKey);
-      const data = rawData ? JSON.parse(rawData) : null;
-      const partnerCodeValue = data && (typeof data.partnerCode === "string" || typeof data.partnerCode === "number")
-        ? String(data.partnerCode).trim()
-        : "";
-      partnerCodeNode.textContent = partnerCodeValue ? `PARTNER CODE ${partnerCodeValue}` : "PARTNER CODE NOT ASSIGNED";
-      const savedBrandName = data && typeof data.brandName === "string" ? data.brandName.trim() : "";
-      if (savedBrandName) {
-        const normalizedBrandName = savedBrandName.replace(/\s+/g, "").toLowerCase();
-        if (normalizedBrandName) applyDsaBrandTracking(normalizedBrandName);
+        }
+      });
+      if (moneycontrolApply) {
         const moneycontrolUrl = new URL(moneycontrolApply.href);
-        moneycontrolUrl.searchParams.set("utm_campaign", `Login_${savedBrandName.replace(/\s/g, "")}`);
+        moneycontrolUrl.searchParams.set("utm_campaign", "Login_" + String(brandName).replace(/\s/g, ""));
         moneycontrolApply.href = moneycontrolUrl.toString();
       }
-      const savedMobileNumber = data && (typeof data.mobileNumber === "string" || typeof data.mobileNumber === "number")
-        ? String(data.mobileNumber).trim()
-        : "";
-      footerBrand.textContent = savedBrandName || "Partner Portal";
-      footerMobile.textContent = savedMobileNumber || "Mobile number not provided";
-      if (!data || typeof data.brandName !== "string" || !data.brandName.trim()) return;
+    }
 
-      nameNode.textContent = data.brandName.trim();
-      const logo = data.logoDataUrl || data.logo;
-      const hasLocalLogo = typeof logo === "string" && /^data:image\/(png|jpeg);base64,/i.test(logo);
-      if (hasLocalLogo) {
-        logoNode.src = logo;
-        logoFrame.classList.add("has-logo");
-      }
+    function showBrand(data) {
+      nameNode.textContent = data.brandName;
+      partnerCodeNode.textContent = data.partnerCode ? "PARTNER CODE " + data.partnerCode : "PARTNER ID " + (data.partnerId || "");
+      logoNode.src = data.logoUrl;
+      logoNode.alt = data.brandName + " logo";
+      logoFrame.classList.add("has-logo");
+      footerBrand.textContent = data.brandName;
+      footerMobile.textContent = data.mobileNumber || "Mobile number not provided";
 
-      const whatsapp = typeof data.whatsappNumber === "string" ? data.whatsappNumber.trim() : "";
+      const whatsapp = String(data.whatsappNumber || "").trim();
       if (whatsapp) {
         const digits = whatsapp.replace(/\D/g, "");
-        const internationalNumber = digits.length === 10 ? `91${digits}` : digits;
-        headerWhatsApp.href = `https://wa.me/${internationalNumber}`;
-        headerWhatsAppLabel.textContent = `Support - ${whatsapp}`;
+        const internationalNumber = digits.length === 10 ? "91" + digits : digits;
+        const whatsappUrl = "https://wa.me/" + internationalNumber;
+        headerWhatsApp.href = whatsappUrl;
+        headerWhatsAppLabel.textContent = "Support - " + whatsapp;
         headerWhatsApp.hidden = false;
-        supportWhatsApp.href = `https://wa.me/${internationalNumber}`;
+        supportWhatsApp.href = whatsappUrl;
         supportWhatsApp.hidden = false;
       }
 
-      if (hasLocalLogo && whatsapp) notice.hidden = true;
-    } catch {
-      // Storage may be blocked for file:// pages; leave the clear local demo notice visible.
+      applyDsaBrandTracking(data.brandName);
+      if (notice) notice.hidden = true;
+      if (localNotice) localNotice.hidden = true;
+      document.title = data.brandName + " | DSA Loan Partner Portal";
+    }
+
+    async function loadSharedPartner(slug) {
+      const response = await fetch("/api/partner?slug=" + encodeURIComponent(slug), {
+        headers: { "Accept": "application/json" }
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "This DSA portal link is not active.");
+      showBrand(data);
+    }
+
+    async function loadLegacyLocalPreview() {
+      try {
+        const rawData = localStorage.getItem("paisainstantDemoData");
+        const data = rawData ? JSON.parse(rawData) : null;
+        if (!data || typeof data.brandName !== "string" || !data.brandName.trim()) return;
+        nameNode.textContent = data.brandName.trim();
+        partnerCodeNode.textContent = data.partnerCode ? "PARTNER CODE " + data.partnerCode : "PARTNER CODE NOT ASSIGNED";
+        footerBrand.textContent = data.brandName.trim();
+        footerMobile.textContent = data.mobileNumber || "Mobile number not provided";
+        const logo = data.logoDataUrl || data.logo;
+        if (typeof logo === "string" && /^data:image\/(png|jpeg);base64,/i.test(logo)) {
+          logoNode.src = logo;
+          logoFrame.classList.add("has-logo");
+        }
+        const whatsapp = String(data.whatsappNumber || "").trim();
+        if (whatsapp) {
+          const digits = whatsapp.replace(/\D/g, "");
+          const number = digits.length === 10 ? "91" + digits : digits;
+          headerWhatsApp.href = "https://wa.me/" + number;
+          headerWhatsAppLabel.textContent = "Support - " + whatsapp;
+          headerWhatsApp.hidden = false;
+          supportWhatsApp.href = "https://wa.me/" + number;
+          supportWhatsApp.hidden = false;
+        }
+        applyDsaBrandTracking(data.brandName);
+        if (notice && logo) notice.hidden = true;
+      } catch {
+        // Keep the neutral portal branding if browser-local preview data is unavailable.
+      }
+    }
+
+    const slug = new URLSearchParams(window.location.search).get("brand");
+    if (slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      loadSharedPartner(slug).catch((error) => {
+        if (notice) {
+          notice.hidden = false;
+          notice.textContent = error instanceof Error ? error.message : "Unable to load this DSA portal.";
+        }
+      });
+    } else {
+      loadLegacyLocalPreview();
     }
   })();
 </script>
