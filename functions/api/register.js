@@ -85,7 +85,7 @@ export async function onRequestPost({ request, env }) {
       whatsappNumber,
       partnerCode,
       "dsa-logos/" + slug,
-      logo.bytes,
+      logo.base64,
       logo.contentType,
       1
     ).run();
