@@ -33,7 +33,7 @@ function decodeLogo(dataUrl) {
   const isJpeg = match[1] === "image/jpeg" &&
     bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
   if (!isPng && !isJpeg) throw new Error("The logo file content does not match PNG or JPG format.");
-  return { bytes, contentType: match[1] };
+  return { base64: match[2], contentType: match[1] };
 }
 
 export async function onRequestPost({ request, env }) {
