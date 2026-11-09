@@ -91,6 +91,35 @@ export async function onRequestPost({ request, env }) {
     ).run();
 
     const partnerId = Number(result.meta && result.meta.last_row_id || 0);
+    const portalPath = "/p/" + encodeURIComponent(slug);
+    let sheetSync = "not_configured";
+
+    // Google Sheets is a secondary copy. A webhook failure must never undo
+    // or hide a successful D1 registration.
+    if (env.GOOGLE_SHEET_WEBHOOK_URL && env.GOOGLE_SHEET_WEBHOOK_SECRET) {
+      try {
+        const webhookResponse = await fetch(env.GOOGLE_SHEET_WEBHOOK_URL, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            token: env.GOOGLE_SHEET_WEBHOOK_SECRET,
+            brandName,
+            whatsappNumber,
+            email,
+            shareLink: new URL(portalPath, request.url).toString()
+          }),
+          signal: AbortSignal.timeout(10000)
+        });
+        if (!webhookResponse.ok) throw new Error("Google Sheets webhook returned HTTP " + webhookResponse.status);
+        const webhookResult = await webhookResponse.json();
+        if (webhookResult.success !== true) throw new Error("Google Sheets webhook rejected the registration");
+        sheetSync = "sent";
+      } catch (syncError) {
+        console.error("Google Sheets sync failed for partner " + partnerId + ":", syncError);
+        sheetSync = "pending";
+      }
+    }
+
     return json({
       success: true,
       status: "ACTIVE",
@@ -98,7 +127,8 @@ export async function onRequestPost({ request, env }) {
       partnerCode,
       brandName,
       slug,
-      portalPath: "/p/" + encodeURIComponent(slug)
+      portalPath,
+      sheetSync
     }, 201);
   } catch (error) {
     const message = String(error && error.message || "");
