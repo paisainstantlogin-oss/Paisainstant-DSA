@@ -17,8 +17,11 @@ function checkPin() {
     poonawalla: "Poonawalla Fincorp",
     moneycontrol: "Moneycontrol",
     idfc: "IDFC Bank – Salary",
+    werize_salary: "WeRize Salary Loan",
+    werize_business: "WeRize Business Loan",
+    lnt: "L&T Finance",
   };
-  const additionalLenders = ["moneycontrol"];
+  const additionalLenders = ["moneycontrol", "werize_salary", "werize_business", "lnt"];
 
   if (pin.length !== 6) {
     box.innerHTML = "<p>Enter a valid 6-digit pincode</p>";
