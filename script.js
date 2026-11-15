@@ -5,6 +5,7 @@ function checkPin() {
     muthoot: "Muthoot EMI",
     poonawalla: "Poonawalla Fincorp",
     moneycontrol: "Moneycontrol",
+    idfc: "IDFC Bank – Salary",
   };
   const additionalLenders = ["moneycontrol"];
 
@@ -14,7 +15,7 @@ function checkPin() {
   }
 
   const matchedLenders = window.PINCODE_LENDERS[pin] || [];
-  const lenders = [...new Set([...matchedLenders, ...additionalLenders])];
+  const lenders = [...new Set([...matchedLenders, ...additionalLenders, ...(window.IDFC_PINCODES?.has(pin) ? ["idfc"] : [])])];
   box.innerHTML = "<b>Available Lenders</b>" + lenders
     .map((id) => `<div class="pin-lender">✅ ${names[id] || id}</div>`)
     .join("");
